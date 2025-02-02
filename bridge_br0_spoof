@@ -1,0 +1,186 @@
+#!/bin/bash
+echo;
+
+# Check if bridge-utils package is installed
+if ! dpkg -s bridge-utils &> /dev/null; then
+  echo "The bridge-utils package is not installed."
+  echo "Please install it by running the command: sudo apt install bridge-utils"
+  echo "Type 'ok' to exit..."
+  read resposta
+  if [ "$resposta" = "ok" ]; then
+    exit
+  fi
+else
+  echo "The bridge-utils package is already installed."
+fi
+
+echo;
+echo "Configuring /etc/network/interfaces to set bridge br0 active";
+echo "..."
+echo "Checking Network Address";
+echo "ip route";
+ip route;
+echo;
+echo "";
+read -rp "Enter the network interface to use with bridge br0: " interface
+echo "The chosen network interface is: $interface"
+
+
+#begin if else
+
+# Function to display and read input, and assign the input to variables
+read_input() {
+    read -rp "$1" value
+    echo "$2: $value"
+    echo ""
+    #echo "$value"  # Return the value so we can assign it to the corresponding variable
+}
+  
+# Choose between default or manual input for bridge ip, netmask, broadcast and gateway...
+echo "Choose an option: "
+echo "1) Use default network settings with bridge IP 192.168.0.178 for network 192.168.0.0/24"
+echo "2) Enter data manually if the network is different..."
+read -rp "Choose an option (1 or 2): " choice
+echo ""
+
+if [ "$choice" -eq 1 ]; then
+    # Default network settings
+bridge_ip=192.168.0.178
+broadcast=192.168.0.255
+netmask=255.255.255.0
+gateway=192.168.0.1
+
+echo "Use mac-random.html to use a specific MAC vendor for better camouflage in the network";
+echo "Download in https://github.com/leandroibov/gerador-de-enderecos-mac";
+read -rp "Enter the mac vendor to mac spoofing " mac
+echo "The chosen is: $mac"
+echo;
+    
+    echo "Default network selected."
+    
+else
+
+echo "";
+read -rp "Enter IP you want for the bridge " bridge_ip
+echo "The chosen IP is: $bridge_ip"
+echo;
+
+read -rp "Enter the broadcast " broadcast
+echo "The chosen is: $broadcast"
+echo;
+
+read -rp "Enter the netmask " netmask
+echo "The chosen is: $netmask"
+echo;
+
+read -rp "Enter the gateway " gateway
+echo "The chosen is: $gateway"
+echo;
+
+echo "Use mac-random.html to use a specific MAC vendor for better camouflage in the network";
+echo "Download in https://github.com/leandroibov/gerador-de-enderecos-mac";
+read -rp "Enter the mac vendor to mac spoofing " mac
+echo "The chosen is: $mac"
+echo;
+
+
+fi
+#end if else
+
+echo "Configuring bridge Br0";
+#echo "sudo brctl delif br0 $interface;";
+#sudo brctl delif br0 $interface;
+
+#Deleting, Down br0 if it exist, cause if exists, it blocks addif br0 $interface
+echo "sudo brctl show; #(show bridges and interfaces connected if exist...";
+sudo brctl show;
+echo;
+echo "sudo brctl delif br0 $interface;";
+sudo brctl delif br0 $interface;
+echo "";
+echo "sudo ip link set br0 down;";
+sudo ip link set br0 down;
+echo "";
+echo "sudo brctl delif br0 $interface;";
+sudo brctl delif br0 $interface;
+echo "";
+echo "sudo brctl delbr br0;";
+sudo brctl delbr br0;
+echo "";
+echo "sudo ip link delete br0;";
+sudo ip link delete br0;
+echo "";
+echo "sudo brctl delif br0 $interface;";
+sudo brctl delif br0 $interface;
+
+#now adding br0 and adding br0 to $interface...
+echo "";
+echo "sudo brctl addbr br0;";
+sudo brctl addbr br0;
+echo "";
+echo "sudo brctl addif br0 $interface;";
+sudo brctl addif br0 $interface;
+
+echo;
+sudo cat > /etc/network/interfaces << EOF
+
+
+# This file describes the network interfaces available on your system
+# and how to activate them. For more information, see interfaces(5).
+
+#Debian Default Configuration with no bridges...
+#source /etc/network/interfaces.d/*
+
+# The loopback network interface
+#auto lo
+#iface lo inet loopback
+
+
+
+#BRIDGE BR0 SETTING FOR STATIC IP $bridge_ip
+#adicione
+# The loopback network interface
+auto lo br0
+iface lo inet loopback
+
+# Set up interfaces manually, avoiding conflicts with, e.g., network manager
+iface $interface inet manual
+
+# Bridge setup
+auto br0
+iface br0 inet static
+bridge_ports $interface
+address $bridge_ip
+broadcast $broadcast
+netmask $netmask
+gateway $gateway
+hwaddress ether $mac
+
+
+EOF
+
+echo "Restarting Network Manager Harding (stop, disable, enable, start)";
+sudo systemctl stop NetworkManager;
+sudo systemctl disable NetworkManager;
+sudo systemctl enable NetworkManager;
+sudo systemctl start NetworkManager;
+
+echo;
+echo "Configured /etc/network/interfaces to set bridge br0 using $interface active";
+echo;
+echo "cat /etc/network/interfaces";
+cat /etc/network/interfaces;
+echo;
+echo "Reboot to Restart your Debian Linux System to activate br0!"
+
+
+
+
+
+
+
+
+
+
+
+

@@ -1,0 +1,70 @@
+#!/bin/bash
+echo;
+
+# Check if bridge-utils package is installed
+if ! dpkg -s bridge-utils &> /dev/null; then
+  echo "The bridge-utils package is not installed."
+  echo "Please install it by running the command: sudo apt install bridge-utils"
+  echo "Type 'ok' to exit..."
+  read resposta
+  if [ "$resposta" = "ok" ]; then
+    exit
+  fi
+else
+  echo "The bridge-utils package is already installed."
+fi
+echo;
+
+echo "See the bridges configured in this linux system..."
+echo "sudo brctl show;";
+sudo brctl show;
+
+echo "";
+echo "Download and use https://github.com/leandroibov/gerador-de-enderecos-mac to generate the specific MAC vendor for executing a spoofing technique!"
+read -rp "Enter the bridge you want to mac vendor spoofing " bridge
+echo "The chosen bridge is: $bridge"
+
+read -rp "Enter the new MAC vendor for bridge $bridge: " mac
+echo "The chosen mac is: $mac"
+echo;
+
+#echo "sudo ip link set $bridge down";
+    #sudo ip link set $bridge down
+    #echo "";
+    echo "sudo ip link set dev $bridge address $mac";
+    sudo ip link set dev $bridge address $mac
+    #echo "";
+    #echo "sudo ip link set $bridge up";
+    #sudo ip link set $bridge up
+    echo "";
+    echo "MAC address of bridge $bridge has been successfully changed."
+
+
+
+echo;
+echo "Restarting Network Manager Harding (stop, disable, enable, start) to validate new bridge mac";
+sudo systemctl stop NetworkManager;
+sudo systemctl disable NetworkManager;
+sudo systemctl enable NetworkManager;
+sudo systemctl start NetworkManager;
+echo;
+
+echo "------------------------------------------------------------"
+echo "See $bridge mac spoofing";
+echo "sudo ip link show $bridge;";
+sudo ip link show $bridge;
+echo "------------------------------------------------------------"
+
+
+
+
+
+
+
+
+
+
+
+
+
+

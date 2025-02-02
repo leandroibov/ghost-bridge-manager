@@ -1,0 +1,61 @@
+#!/bin/bash
+
+# Developer: Your Name
+# Bridge Configuration Menu
+
+echo;
+echo "------------------------------------------------------------------------------------";
+echo "Bridge Configuration Menu";
+echo "Select a command to execute:";
+echo;
+echo "1) bridge_br0 - Create a bridge br0 with unknown MAC address and static IP (default or chosen)";
+echo "2) bridge_br0_spoof - Create a bridge br0 with permanent MAC spoofing and static IP (default or chosen)";
+echo "3) bridge_br0_dhcp - Create a bridge br0 with unknown MAC address and DHCP";
+echo "4) bridge_br0_dhcp_spoof - Create a bridge br0 with permanent MAC spoofing and DHCP";
+echo "5) bridge_br0_off - Disable and destroy the bridge br0, reverting to default automatic configuration";
+echo "6) bridge_spoofer - Apply MAC spoofing to bridge br0 or others";
+echo;
+echo "0) Exit";
+echo "------------------------------------------------------------------------------------";
+echo;
+
+while true; do
+    read -p "Enter your choice: " choice
+
+    case $choice in
+        1) 
+            # Execute bridge_br0 command
+            /bin/bridge_br0
+            ;;
+        2)
+            # Execute bridge_br0_spoof command
+            /bin/bridge_br0_spoof
+            ;;
+        3)
+            # Execute bridge_br0_dhcp command
+            /bin/bridge_br0_dhcp
+            ;;
+        4)
+            # Execute bridge_br0_dhcp_spoof command
+            /bin/bridge_br0_dhcp_spoof
+            ;;
+        5)
+            # Execute bridge_br0_off command
+            /bin/bridge_br0_off
+            ;;
+        6)
+            # Execute bridge_spoofer command
+            /bin/bridge_spoofer
+            ;;
+        0)
+            echo "Exiting..."
+            break
+            ;;
+        *)
+            echo "Invalid option, please try again."
+            ;;
+    esac
+done
+
+echo "Thank you for using the Bridge Configuration Menu!"
+

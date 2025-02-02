@@ -1,0 +1,120 @@
+#!/bin/bash
+echo;
+
+# Check if bridge-utils package is installed
+if ! dpkg -s bridge-utils &> /dev/null; then
+  echo "The bridge-utils package is not installed."
+  echo "Please install it by running the command: sudo apt install bridge-utils"
+  echo "Type 'ok' to exit..."
+  read resposta
+  if [ "$resposta" = "ok" ]; then
+    exit
+  fi
+else
+  echo "The bridge-utils package is already installed."
+fi
+
+echo;
+echo "Configuring /etc/network/interfaces to set bridge br0 active";
+echo "..."
+echo "Checking Network Address";
+echo "ip route";
+ip route;
+echo;
+echo "";
+read -rp "Enter the network interface to use with the bridge br0: " interface
+echo "The chosen network interface is: $interface"
+
+
+echo "Configuring bridge Br0";
+#echo "sudo brctl delif br0 $interface;";
+#sudo brctl delif br0 $interface;
+
+#Deleting, Down br0 if it exist, cause if exists, it blocks addif br0 $interface
+echo "sudo brctl show; #(show bridges and interfaces connected if exist...";
+sudo brctl show;
+echo;
+echo "sudo brctl delif br0 $interface;";
+sudo brctl delif br0 $interface;
+echo "";
+echo "sudo ip link set br0 down;";
+sudo ip link set br0 down;
+echo "";
+echo "sudo brctl delif br0 $interface;";
+sudo brctl delif br0 $interface;
+echo "";
+echo "sudo brctl delbr br0;";
+sudo brctl delbr br0;
+echo "";
+echo "sudo ip link delete br0;";
+sudo ip link delete br0;
+echo "";
+echo "sudo brctl delif br0 $interface;";
+sudo brctl delif br0 $interface;
+
+#now adding br0 and adding br0 to $interface...
+echo "";
+echo "sudo brctl addbr br0;";
+sudo brctl addbr br0;
+echo "";
+echo "sudo brctl addif br0 $interface;";
+sudo brctl addif br0 $interface;
+
+echo;
+sudo cat > /etc/network/interfaces << EOF
+
+
+# This file describes the network interfaces available on your system
+# and how to activate them. For more information, see interfaces(5).
+
+#Debian Default Configuration with no bridges...
+#source /etc/network/interfaces.d/*
+
+# The loopback network interface
+#auto lo
+#iface lo inet loopback
+
+
+
+#DHCP MODE - 1 interface:
+# The loopback network interface
+auto lo
+iface lo inet loopback
+
+#Bridge br0 with dhcp for automatic IP address
+# Set up interfaces manually, avoiding conflicts with, e.g., network manager
+iface $interface inet manual
+
+# Bridge setup
+auto br0
+iface br0 inet dhcp
+bridge_ports $interface
+
+
+EOF
+
+echo "Restarting Network Manager Harding (stop, disable, enable, start)";
+sudo systemctl stop NetworkManager;
+sudo systemctl disable NetworkManager;
+sudo systemctl enable NetworkManager;
+sudo systemctl start NetworkManager;
+
+echo;
+echo "Configured /etc/network/interfaces to set bridge br0 using $interface active";
+echo;
+echo "cat /etc/network/interfaces";
+cat /etc/network/interfaces;
+echo;
+echo "Reboot to Restart your Debian Linux System to activate br0!"
+
+
+
+
+
+
+
+
+
+
+
+
